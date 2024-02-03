@@ -1,19 +1,19 @@
 {
   "visual": {
-    "name": "textFilter",
-    "displayName": "Text Filter",
-    "guid": "textFilter25A4896A83E0487089E2B90C9AE57C8A",
+    "name": "textFilterRS",
+    "displayName": "Text Filter (RS)",
+    "guid": "textFilterRSe8c12c3a530441bf833d876d17d39dda",
     "visualClassName": "Visual",
-    "version": "2.2.6",
-    "description": "Provides a search box that can be placed anywhere in your dashboard. This adds a text filtering capability for quick searching across your data.",
-    "supportUrl": "https://community.powerbi.com",
-    "gitHubUrl": "https://github.com/microsoft/PowerBI-visuals-TextFilter"
+    "version": "2.3.0.0",
+    "description": "RS version, which provides capabilities to execute (OR) searches across multiple tables. Based on MS version 2.2.6.  Provides a search box that can be placed anywhere in your dashboard. This adds a text filtering capability for quick searching across your data.",
+    "supportUrl": "http://raysleepy.com",
+    "gitHubUrl": "https://github.com/raysleepy/PowerBI-visuals-TextFilter-RS"
   },
-  "output": "dist/textFilter.pbiviz",
+  "output": "dist/textFilterRS.pbiviz",
   "apiVersion": "5.3.0",
   "author": {
-    "name": "Microsoft",
-    "email": "pbicvsupport@microsoft.com"
+    "name": "Ray Sleepy",
+    "email": "pbiviz@raysleepy.com"
   },
   "assets": {
     "icon": "assets/icon.png"
