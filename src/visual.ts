@@ -33,12 +33,9 @@ import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import FilterAction = powerbi.FilterAction;
-import { IAdvancedFilter, AdvancedFilter } from "powerbi-models";
-
+import { IAdvancedFilter, AdvancedFilter, FilterType } from "powerbi-models";
 import { Selection as d3Selection, select as d3Select } from "d3-selection";
-
 import { TextFilterSettingsModel } from "./settings";
-
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
 const pxToPt = 0.75,
@@ -46,15 +43,14 @@ const pxToPt = 0.75,
   fontPxAdjStd = 24,
   fontPxAdjLrg = 26;
 
-
 export class Visual implements IVisual {
-
   private target: HTMLElement;
   private searchUi: d3Selection<HTMLDivElement, any, any, any>;
   private searchBox: d3Selection<HTMLInputElement, any, any, any>;
   private searchButton: d3Selection<HTMLButtonElement, any, any, any>;
   private clearButton: d3Selection<HTMLButtonElement, any, any, any>;
   private column: powerbi.DataViewMetadataColumn;
+  private columns: powerbi.DataViewMetadataColumn[];
   private host: powerbi.extensibility.visual.IVisualHost;
   private events: IVisualEventService;
   private formattingSettingsService: FormattingSettingsService;
@@ -112,7 +108,7 @@ export class Visual implements IVisual {
         });
         mouseEvent.preventDefault();
       });
-  
+
     this.localizationManager = options.host.createLocalizationManager()
     this.formattingSettingsService = new FormattingSettingsService(this.localizationManager);
 
@@ -143,14 +139,15 @@ export class Visual implements IVisual {
 
       // Well, it hasn't changed, then lets try to load the existing search text.
     } else if (options?.jsonFilters?.length > 0) {
-        searchText = `${(<IAdvancedFilter[]>options.jsonFilters).map((f) => f.conditions.map((c) => c.value)).join(" ")}`;
+        // searchText = `${(<IAdvancedFilter[]>options.jsonFilters).map((f) => f.conditions.map((c) => c.value)).join(" ")}`;
+        searchText = (<IAdvancedFilter[]>options.jsonFilters)[0].conditions[0].value.toString();
     }
 
     this.searchBox.property("value", searchText);
     this.column = newColumn;
 
+    this.columns = metadata && metadata.columns;
     this.events.renderingFinished(options);
-
   }
 
   /**
@@ -183,32 +180,39 @@ export class Visual implements IVisual {
       .style('height', `${fontScaleStd}px`);
   }
 
-  /** 
+  /**
    * Perfom search/filtering in a column
    * @param {string} text - text to filter on
    */
   public performSearch(text: string) {
     if (this.column) {
       const isBlank = ((text || "") + "").match(/^\s*$/);
-      const target = {
-        table: this.column.queryName.substr(0, this.column.queryName.indexOf(".")),
-        column: this.column.queryName.substr(this.column.queryName.indexOf(".") + 1)
-      };
 
-      let filter: any = null;
-      let action = FilterAction.remove;
-      if (!isBlank) {
-        filter = new AdvancedFilter(
-          target,
-          "And",
-          {
-            operator: "Contains",
-            value: text
-          }
-        );
-        action = FilterAction.merge;
+      if (isBlank) {
+        this.host.applyJsonFilter(null, "general", "filter", FilterAction.remove);
       }
-      this.host.applyJsonFilter(filter, "general", "filter", action);
+      else {
+        let filters: AdvancedFilter[] = [];
+        let action = FilterAction.merge;
+        this.columns.forEach(col => {
+          // HACK: Get around internal name being sum(table.column) or count(table.column) due to datarole type of measure 
+          const target = {
+            table: col.queryName.split(".")[0].split("(")[1],
+            column: col.queryName.split(".")[1].split(")")[0]
+          };
+          console.log("Processing filter: " + target.table + "." + target.column);
+          filters.push(new AdvancedFilter(
+              target,
+              "And",
+              {
+                operator: "Contains",
+                value: text
+              }
+          ));
+        })
+
+        this.host.applyJsonFilter(filters, "general", "filter", action);
+      }
     }
     this.searchBox.property("value", text);
   }
