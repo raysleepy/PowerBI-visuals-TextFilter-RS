@@ -49,6 +49,8 @@ A dozen or so screenshots are also included. They should be self-explanatory, if
 BTW, you may wonder why those filters are formatted in different colors. Well, when you mix red and blue, you get purple.
 (We are talking about Power BI visuals, not politics...)
 
+![image](https://github.com/raysleepy/PowerBI-visuals-TextFilter-RS/assets/43712707/cbbca2df-bcdd-4562-89eb-3268cc5db4d6)
+
 # NB
 As much as I'd like to think this visual provides a useful feature (for me at least), it's really something grafted onto Text Filter
 in a way that the original author probably never envisioned or now plans. Hence, it's unlikely that it should ever be PR'd.
